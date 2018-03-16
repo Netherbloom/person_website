@@ -102,6 +102,13 @@ public class GrabBooks {
 	
 	public static void main(String [] args) throws Exception{
 	
+		 Document document=Jsoup.connect("https://www.gzebook.cn/booklist/booklist.html").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0)").get();
+		 Elements chapters=document.select("a");
 		
+		 List<EbookChapter> list=new ArrayList<EbookChapter>();
+		 for (Element e:chapters) {
+			 String second_url=e.attr("abs:href");//内容详情地址
+			 System.out.println(second_url);
+			 }
 	}
 }
