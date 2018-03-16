@@ -26,9 +26,13 @@ public class EbooksDao extends BaseDaoWithQuery<Ebooks, String>{
 		super(Ebooks.class);
 	}
 	
+	/**
+	 * 获取需更新书籍
+	 * @return
+	 */
 	public List<Ebooks> findAllUpdate(){
 		StringBuilder sb=new StringBuilder();
-		sb.append("select * from ebooks where  updatetime is null");
+		sb.append("select * from ebooks where updatetime is null or (updatetime between SUBDATE(CURDATE(),INTERVAL 3 month) and left(DATE_ADD(NOW(),INTERVAL 1 DAY) ,10))");
 		Query query=em.createNativeQuery(sb.toString());
 		MapQuery<Ebooks> mq = new MapQuery<Ebooks>(Ebooks.class);
 		List<Ebooks>list=mq.getResultList(query);

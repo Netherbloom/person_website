@@ -154,29 +154,4 @@ public class MobileAppController extends BaseController{
 		writeJson(response, JsonUtil.toJson(data));
 	}
 	
-	@RequestMapping(value="getebook")
-	public void getebook(HttpServletResponse response,HttpServletRequest request) throws Exception{
-		Map<String, Object> data=new HashMap<String,Object>();
-		data.put("code", "200");
-		data.put("msg", "");
-		ebooksService.syncinitEbooks();
-		writeJson(response, JsonUtil.toJson(data));
-	}
-	
-	
-	@RequestMapping(value="getebookchapter")
-	public void getebookchapter(HttpServletResponse response,HttpServletRequest request) throws Exception{
-		Map<String, Object> data=new HashMap<String,Object>();
-		data.put("code", "200");
-		data.put("msg", "");
-		List<Ebooks> list=ebooksService.findAll();
-		if(list!=null && list.size()>0){
-			for (Ebooks ebooks:list) {
-				int num=chapterService.getMaxPri(ebooks.getId());
-				chapterService.syncinitChapter(ebooks, num);
-			}
-		}
-		writeJson(response, JsonUtil.toJson(data));
-	}
-
 }

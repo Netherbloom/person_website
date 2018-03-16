@@ -1,16 +1,19 @@
 package com.website.api.service;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import com.util.CommonMethodUtil;
 import com.util.Const;
 import com.util.DateTimeUtil;
 import com.util.MD5Util;
 import com.util.QRCodeUtil;
+import com.website.admin.entity.Ebooks;
 import com.website.admin.service.EbookChapterService;
 import com.website.admin.service.EbooksService;
 import com.website.baseserver.entity.Config;
@@ -62,6 +65,24 @@ public class TimeTaskService {
 	public void syncEbook(){
 		try {
 			ebooksService.syncinitEbooks();
+		} catch (Exception e) {
+			_Log.info(e.getMessage());
+		}
+	}
+	
+	/**
+	 * 每天3点更新书籍
+	 */
+	@Scheduled(cron="0 0 3 * * ?")
+	public void syncEbookChpater(){
+		try {
+			List<Ebooks> list=ebooksService.findAllUpdate();
+			if(list!=null && list.size()>0){
+				for (Ebooks ebooks:list) {
+					int num=chapterService.getMaxPri(ebooks.getId());
+					chapterService.syncinitChapter(ebooks, num);
+				}
+			}
 		} catch (Exception e) {
 			_Log.info(e.getMessage());
 		}

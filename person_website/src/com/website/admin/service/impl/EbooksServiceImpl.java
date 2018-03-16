@@ -85,7 +85,7 @@ public class EbooksServiceImpl implements EbooksService{
 	}
 
 	@Override
-	public List<Ebooks> findAll() {
+	public List<Ebooks> findAllUpdate() {
 		return ebooksDao.findAllUpdate();
 	}
 

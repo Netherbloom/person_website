@@ -34,7 +34,7 @@ public interface EbooksService {
 	 */
 	public void syncinitEbooks() throws Exception;
 	
-	public List<Ebooks> findAll();
+	public List<Ebooks> findAllUpdate();
 	
 	/**
 	 * 分页查询书籍
