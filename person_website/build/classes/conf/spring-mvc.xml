@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+    http://www.springframework.org/schema/data/jpa
+    http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+    http://www.springframework.org/schema/task
+	http://www.springframework.org/schema/task/spring-task-3.1.xsd
+	http://www.springframework.org/schema/cache
+	http://www.springframework.org/schema/cache/spring-cache.xsd">
+	
+	<!-- 注解扫描包 -->
+	<context:component-scan base-package="com" />
+	
+	<task:annotation-driven/>
+
+	<!-- 开启注解 -->
+	<mvc:annotation-driven />
+	
+	<!-- 静态资源(js/image)的访问 -->
+	<mvc:resources location="/statics/" mapping="/statics/**"/>
+	<mvc:resources location="/ueditor/" mapping="/ueditor/**"/>
+
+	<!-- 定义视图解析器 -->	
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/pages/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+
+	<!-- 启用支持Annotation注解方式的事务管理 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	
+	<jpa:repositories base-package="com.website"
+        entity-manager-factory-ref="entityManagerFactory" repository-impl-postfix="Impl">
+	</jpa:repositories>
+
+	<!-- 启用支持Annotation注解方式的事务管理 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- JPA事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory"></property>
+	</bean>
+	
+	<!-- 声明EntityManagerFactory -->
+	<bean id="entityManagerFactory"	class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="packagesToScan" value="com.**.entity"/>
+		<property name="loadTimeWeaver">
+			<bean class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver"/> 
+		</property>
+		<property name="persistenceProvider">
+			<bean class="org.hibernate.jpa.HibernatePersistenceProvider"/>
+		</property>
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="database" value="MYSQL"/>
+			</bean>
+		</property>
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">false</prop>
+				<prop key="javax.persistence.validation.mode">none</prop>
+			</props>
+		</property>
+	</bean>
+		<!-- 文件上传相关 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!--one of the properties available;the maximum upload size in bytes 500M -->
+		<property name="maxUploadSize" value="524288000" />
+	</bean>
+	 <!-- AOP -->
+   <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+   
+   <!-- 自定义拦截链配置 -->  
+     <mvc:interceptors>  
+        <mvc:interceptor>  
+          <!--   <mvc:mapping path="/**"/>   -->
+           <mvc:mapping path="/blog/**"/>  
+            <mvc:mapping path="/userinfo/**"/>  
+             <mvc:mapping path="/admin/**"/>  
+            <bean class="com.filter.LoginInterceptor"></bean>  
+        </mvc:interceptor>  
+    </mvc:interceptors>  
+</beans>

@@ -1,0 +1,15 @@
+@charset "utf-8";
+/* CSS Document */
+* {padding:0px;margin:0px;border:0;}
+a {text-decoration: none;outline:none;blur:expression(this.onFocus=this.blur()); border:0;}
+ul {padding: 0px;margin: 0px;}
+li {list-style-position: outside;list-style-type: none;	vertical-align:bottom; /*fix ie6 li height bug*/ zoom:1;}
+img {border:0px;}
+
+body {
+	width:100%;
+	font-size: 12px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif, "微软雅黑", "宋体";
+	height: 100%;
+	color:#575757;
+}

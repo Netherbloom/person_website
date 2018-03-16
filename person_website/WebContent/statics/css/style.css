@@ -1,0 +1,9 @@
+@charset "utf-8";
+.lableleft{
+	float: left;
+	width:80px;
+}
+.lableright{
+	width: 200px;
+	height: 20px;
+}
