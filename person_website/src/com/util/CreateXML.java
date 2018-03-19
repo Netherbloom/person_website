@@ -2,27 +2,27 @@ package com.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.website.admin.entity.EbookChapter;
-
 public class CreateXML {
 
 	public static List<String> getURL() throws IOException{
 		List<String> list=new ArrayList<String>();
+		list.add("https://www.gzebook.cn/index.html");
+		list.add("https://www.gzebook.cn/booklist/booklist.html");
 		 Document document=Jsoup.connect("https://www.gzebook.cn/booklist/booklist.html").userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0)").get();
 		 Elements chapters=document.select("a");
 		 for (Element e:chapters) {
@@ -32,6 +32,11 @@ public class CreateXML {
 		return  list;
 	}
 	
+	/**
+	 * 创建xml文件
+	 * @param file
+	 * @throws Exception
+	 */
 	 public static void SAXcreate(File file)throws Exception {
 	        //初始化要生成文件的数据
 		 	List<String> list=getURL();
@@ -46,7 +51,8 @@ public class CreateXML {
 
 	        handler.startDocument();
 	        handler.startElement("http://www.sitemaps.org/schemas/sitemap/0.9", "", "urlset", null);//根节点标签
-
+	        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+	        String time=sdf.format(new Date());
 	        for (String str:list) {
 	            AttributesImpl atts=new AttributesImpl();//创建熟悉
 	            handler.startElement("", "", "url", atts);//元素标签开始
@@ -56,7 +62,7 @@ public class CreateXML {
 	            handler.endElement("", "", "loc");//元素标签结束
 	            
 	            handler.startElement("", "", "lastmod", null);//元素标签开始
-	            handler.characters("2018-03-16".toCharArray(),0,10);//元素标签内容
+	            handler.characters(time.toCharArray(),0,time.length());//元素标签内容
 	            handler.endElement("", "", "lastmod");//元素标签结束
 
 	            handler.startElement("", "", "changefreq", null);//元素标签开始

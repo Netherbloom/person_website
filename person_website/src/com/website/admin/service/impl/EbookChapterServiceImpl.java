@@ -6,8 +6,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.util.grab.GrabBook;
 import com.util.grab.GrabBooks;
 import com.website.admin.dao.EbookChapterDao;
 import com.website.admin.dao.EbooksDao;
@@ -39,13 +37,13 @@ public class EbookChapterServiceImpl implements EbookChapterService{
 	@Transactional
 	@Override
 	public void syncinitChapter(Ebooks ebook, int num) {
-		GrabBook.initIps();
+		GrabBooks.initIps();
 		while (true) {
 			try {
 				ebook=GrabBooks.getChapter(ebook, num);
 				break;
 			} catch (Exception e) {
-				GrabBook.changeIP();
+				GrabBooks.changeIP();
 			}
 			
 		}
