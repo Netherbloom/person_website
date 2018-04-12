@@ -84,12 +84,12 @@ public class GrabBooks {
 					 chapter.setEbookid(ebook.getId());
 					 chapter.setPri(i);
 					 chapter.setCopyurl(second_url);
-					 try {
+					/* try {
 						 setChapterContent(chapter);
 					} catch (Exception e2) {
 						changeIP();
 						setChapterContent(chapter);
-					}
+					}*/
 					 list.add(chapter);
 				 }
 				 i++;

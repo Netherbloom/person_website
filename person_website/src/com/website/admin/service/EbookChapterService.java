@@ -25,7 +25,7 @@ public interface EbookChapterService {
 	 * @param ebook
 	 * @param num
 	 */
-	public void syncinitChapter(Ebooks ebook,int num);
+	public void syncinitChapter(Ebooks ebook,int num)throws Exception;
 	
 	/**
 	 * 更新书籍

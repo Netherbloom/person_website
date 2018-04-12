@@ -1,15 +1,27 @@
 package com.website.admin.service.impl;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.web.context.ContextLoader;
+
+import com.util.bootstarp.AbstractTask;
+import com.util.bootstarp.QueueBootstrap;
+import com.util.bootstarp.WheelQueue;
 import com.util.grab.GrabBooks;
 import com.website.admin.dao.EbookChapterDao;
 import com.website.admin.dao.EbooksDao;
@@ -30,16 +42,6 @@ public class EbooksServiceImpl implements EbooksService{
 	private EbookChapterDao chapterDao;
 	@Autowired
 	private EbookChapterService chapterService;
-
-	/**
-	 * 线程队列（非阻塞队列）
-	 */
-	private static ConcurrentLinkedQueue<Ebooks> concurrentLinkedQueue =new ConcurrentLinkedQueue<Ebooks>();
-	
-	/**
-	 * 线程池
-	 */
-	private	static ExecutorService executorService=Executors.newCachedThreadPool();
 	
 	@Override
 	public Ebooks getEbooksById(String id) {
@@ -48,7 +50,6 @@ public class EbooksServiceImpl implements EbooksService{
 
 	@Override
 	public Ebooks getEbooksByName(String name) {
-		System.out.println(name);
 		return ebooksDao.getBy("name", name);
 	}
 
@@ -69,18 +70,55 @@ public class EbooksServiceImpl implements EbooksService{
 	@Transactional
 	@Override
 	synchronized public void syncinitEbooks() throws Exception {
-		List<Ebooks> newEbooks=GrabBooks.getEbooks();
-		List<Ebooks> list=ebooksDao.findAll();
+		final List<Ebooks> newEbooks=GrabBooks.getEbooks();
 			if(newEbooks!=null && newEbooks.size()>0){
-				if(list!=null && list.size()>0){
-					for (Ebooks ebooks:newEbooks) {
-						if(!list.contains(ebooks)){
-							ebooksDao.save(ebooks);
+				QueueBootstrap queueBootstrap = new QueueBootstrap();
+				final WheelQueue wheelQueue = queueBootstrap.start();
+				Thread thread= new Thread(new Runnable(){
+					final ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+					int num=1;
+					@Override
+					public void run() {
+						for (final Ebooks ebooks:newEbooks) {
+						
+							wheelQueue.add(new AbstractTask(UUID.randomUUID().toString().replace("-", "")) {
+								@Override
+								public void run() {
+									DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+									def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+									PlatformTransactionManager txManager = ContextLoader.getCurrentWebApplicationContext().getBean(PlatformTransactionManager.class);
+									TransactionStatus status = txManager.getTransaction(def);
+									try {
+										Ebooks oldEbooks=ebooksDao.getBy("name", ebooks.getName());
+										if(oldEbooks==null){
+											ebooksDao.save(ebooks);
+											oldEbooks=ebooksDao.getBy("name", ebooks.getName());
+										}
+										int num=chapterDao.getMaxPri(oldEbooks.getId());
+										chapterService.syncinitChapter(oldEbooks, num);
+										txManager.commit(status); // 提交事务
+									} catch (Exception e) {
+										System.out.println("异常信息：" + e.toString());
+										 txManager.rollback(status); // 回滚事务
+									}
+								
+								}
+
+								
+							}, threadLocalRandom.nextInt(0,8000));
+							System.out.println(num);
+							 num++;
+							try {
+								Thread.sleep(200);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
 						}
+						
 					}
-				}else{
-					ebooksDao.save(newEbooks);
-				}
+					
+				});
+				thread.start();
 			}
 	}
 
@@ -103,74 +141,6 @@ public class EbooksServiceImpl implements EbooksService{
 			chapterDao.delete(page.getResults());
 		}
 	}
-
-	@Transactional
-	@Override
-	public void syncChapter(Ebooks ebook) {
-		executorService.execute(new Producer(ebook));
-		
-	}
-	
-	/**
-	 * 每分钟执行一次，取队列中数据
-	 */
-	@Scheduled(cron="0 0/1 * * * ?")
-	@Transactional
-	@Override
-	public void taskSaveChapter() {
-		executorService.execute(new Consumer());
-	}  
-	
-	/**
-	 * 将获取章节放入线程队列
-	 * @author Administrator
-	 *
-	 */
-	 class Producer implements Runnable {  
-        private Ebooks ebooks;  
-        
-        public Producer(Ebooks ebooks) {  
-            this.ebooks = ebooks;  
-        }  
-  
-    	@Override
-        public void run() { 
-    		int num=chapterService.getMaxPri(ebooks.getId());
-    		System.out.println(num);
-			try {
-				ebooks=GrabBooks.getChapter(ebooks,num );
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
-				
-			//将得到的数据放入队列中
-			if(ebooks.getChapters()!=null && ebooks.getChapters().size()>0){
-				concurrentLinkedQueue.add(ebooks);  
-			}
-        }  
-    }  
-	
-	/**
-	 * 取出队列内容
-	 * @author Administrator
-	 *
-	 */
-	 class Consumer  implements Runnable {  
-    	
-    	boolean isRunning = true;
-  
-    	@Override
-        public void run() {  
-			while (isRunning) {
-				Ebooks ebooks=concurrentLinkedQueue.poll();
-				if(ebooks!=null && ebooks.getChapters()!=null && ebooks.getChapters().size()>0){
-					chapterService.updateEbook(ebooks);
-				}else{
-					isRunning=false;
-				}
-			}
-        }  
-    }
 	
 	
 }

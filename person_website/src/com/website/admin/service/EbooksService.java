@@ -44,12 +44,5 @@ public interface EbooksService {
 	 */
 	public Page<Ebooks> findAdminEbookPage(Pageable pageable,String keywords);
 	
-	/**
-	 * 同步书籍章节
-	 * @param ebook
-	 */
-	public void syncChapter(Ebooks ebook);
 	
-	
-	public void taskSaveChapter();
 }

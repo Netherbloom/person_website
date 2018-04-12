@@ -61,7 +61,7 @@ public class TimeTaskService {
 	/**
 	 * 每天一点更新书籍
 	 */
-	@Scheduled(cron="0 0 1 * * ?")
+	@Scheduled(cron="0 05 17 * * ?")
 	public void syncEbook(){
 		try {
 			ebooksService.syncinitEbooks();
@@ -70,21 +70,5 @@ public class TimeTaskService {
 		}
 	}
 	
-	/**
-	 * 每天3点更新书籍
-	 */
-	@Scheduled(cron="0 0 3 * * ?")
-	public void syncEbookChpater(){
-		try {
-			List<Ebooks> list=ebooksService.findAllUpdate();
-			if(list!=null && list.size()>0){
-				for (Ebooks ebooks:list) {
-					int num=chapterService.getMaxPri(ebooks.getId());
-					chapterService.syncinitChapter(ebooks, num);
-				}
-			}
-		} catch (Exception e) {
-			_Log.info(e.getMessage());
-		}
-	}
+
 }

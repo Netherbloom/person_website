@@ -11,7 +11,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -254,9 +256,40 @@ public class CommonMethodUtil {
 		} 
 		return result;
 	}
-		
+	
+	/**
+	* 按指定大小，分隔集合，将集合按规定个数分为n个部分
+	* 
+	* @param list
+	* @param len
+	* @return
+	*/
+	public static List<List<?>> splitList(List<?> list, int len) {
+	if (list == null || list.size() == 0 || len < 1) {
+	return null;
+	}
+	 
+	List<List<?>> result = new ArrayList<List<?>>();
+	 
+	 
+	int size = list.size();
+	int count = (size + len - 1) / len;
+	 
+	 
+	for (int i = 0; i < count; i++) {
+	List<?> subList = list.subList(i * len, ((i + 1) * len > size ? size : len * (i + 1)));
+	result.add(subList);
+	}
+	return result;
+	}
+	
 	 public static void main(String []args){
-		 System.out.println(CommonMethodUtil.getRandNum(6));
+		 List<Integer> list=new ArrayList<Integer>();
+		 for (int i = 1; i <= 1000; i++) {
+			 list.add(i);
+		}
+		 List<List<?>> list1= CommonMethodUtil.splitList(list, 5);
+		 System.out.println(list1.get(2));
 	 }
 	
 }

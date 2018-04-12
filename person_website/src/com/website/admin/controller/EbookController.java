@@ -88,7 +88,6 @@ public class EbookController extends BaseController{
 		Map<String, Object> map=new HashMap<String, Object>();
 		Ebooks ebooks=ebooksService.getEbooksById(id);
 		if(ebooks!=null){
-			ebooksService.syncChapter(ebooks);
 			map.put("code", "200");
 			map.put("msg", "操作成功");
 		}else{
