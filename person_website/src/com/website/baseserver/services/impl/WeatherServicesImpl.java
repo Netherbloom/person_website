@@ -3,7 +3,7 @@ package com.website.baseserver.services.impl;
 import java.util.HashMap;
 import java.util.Map;
 import javax.transaction.Transactional;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
